@@ -29,9 +29,7 @@ public class Server {
 
     public Server() {
 
-        led1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, PinState.LOW);
-        led2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01, PinState.LOW);
-        led3 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02, PinState.LOW);
+        led1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01, PinState.LOW);
     }
 
     public static void main(String[] args) {
