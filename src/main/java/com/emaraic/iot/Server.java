@@ -11,20 +11,10 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-/**
- *
- * @author Taha Emara 
- * Website: http://www.emaraic.com 
- * Email : taha@emaraic.com
- * Created on: August 16, 2016
- *
- */
 public class Server {
 
     private ServerSocket server;
     private GpioPinDigitalOutput led1;
-    private GpioPinDigitalOutput led2;
-    private GpioPinDigitalOutput led3;
     final GpioController gpio = GpioFactory.getInstance();
 
     public Server() {
@@ -77,22 +67,12 @@ public class Server {
                         //System.out.println("input   " + in);
                         switch (in) {
                             case "10"://led1 off
+                                System.out.println("Light Off!");
                                 led1.low();
                                 break;
                             case "11"://led1 on
+                                System.out.println("Light On!");
                                 led1.high();
-                                break;
-                            case "20":
-                                led2.low();
-                                break;
-                            case "21":
-                                led2.high();
-                                break;
-                            case "30":
-                                led3.low();
-                                break;
-                            case "31":
-                                led3.high();
                                 break;
                         }
                         output.writeObject("command"+in.toUpperCase());
