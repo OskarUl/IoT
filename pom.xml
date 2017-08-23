@@ -30,7 +30,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>java.Server</mainClass>
+                            <mainClass>Server</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
