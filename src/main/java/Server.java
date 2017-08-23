@@ -25,8 +25,8 @@ public class Server {
     final GpioController gpio = GpioFactory.getInstance();
 
     public Server() {
-        led1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01, PinState.LOW);
-        PC = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02, PinState.LOW);
+        led1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02, PinState.LOW);
+        PC = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01, PinState.LOW);
     }
 
     public static void main(String[] args) {
