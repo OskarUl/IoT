@@ -25,7 +25,7 @@ public class Server {
     final GpioController gpio = GpioFactory.getInstance();
 
     public Server() {
-        led1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02, PinState.LOW);
+        led1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04, PinState.LOW);
         PC = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01, PinState.LOW);
     }
 
@@ -130,9 +130,9 @@ public class Server {
                                             break;
                                         case "21":
                                             System.out.println("Wait");
-                                            PC.high();
-                                            Thread.sleep(400);
                                             PC.low();
+                                            Thread.sleep(400);
+                                            PC.high();
                                             System.out.println("PC On");
                                             break;
                                     }
@@ -144,7 +144,7 @@ public class Server {
 
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
-                                    PC.low();
+                                    PC.high();
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
