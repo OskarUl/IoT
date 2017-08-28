@@ -17,15 +17,14 @@ public class Server {
     private ObjectInputStream input;
     private ObjectOutputStream output;
     private ObjectOutputStream outputA;
-    private ObjectOutputStream outputB;
     private HashMap<String, DataOutputStream> clients;
-    private int x = 0;
+    private int x = 1;
     private GpioPinDigitalOutput led1;
     private GpioPinDigitalOutput PC;
     final GpioController gpio = GpioFactory.getInstance();
 
     public Server() {
-        led1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04, PinState.LOW);
+        led1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02, PinState.LOW);
         PC = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01, PinState.LOW);
     }
 
@@ -55,15 +54,17 @@ public class Server {
                             clients.put("Pc client", os);
                             x = 0;
                             System.out.println(clients.get("Pc client"));
+                            //new Controller(socket).start();
                             break;
                         case "Android client":
                             clients.put("Android client", os);
                             System.out.println(clients.get("Android client"));
+                            new Controller(socket).start();
                             break;
                     }
 
                     System.out.println(clients);
-                    new Controller(socket).start();
+
                     System.out.println("hello client " + socket.getRemoteSocketAddress());
                 }catch (IOException e) {
                     System.out.println("I/O error: " + e);
@@ -83,11 +84,12 @@ public class Server {
     private class Controller extends Thread {
 
         private Socket socket;
-
+        private int num;
         private String in;
 
         public Controller(Socket socket) {
             this.socket = socket;
+            this.num = num;
         }
 
         @Override
@@ -115,24 +117,28 @@ public class Server {
                         new Thread(new Runnable() {
                             public void run() {
                                 try {
+
                                     switch (PcIn) {
                                         case "20":
                                             if (x == 0) {
                                                 outputA = new ObjectOutputStream(clients.get("Pc client"));
                                                 outputA.flush();
                                                 outputA.writeObject("20");
+                                                clients.remove("Pc client");
+                                                System.out.println(clients);
+                                                //outputA.close();
+
                                                 System.out.println("PC Off");
                                                 x = 1;
-                                            }
-                                            else{
-                                                System.out.println("Pc already off!");
+                                            } else {
+                                                System.out.println("Pc not conected");
                                             }
                                             break;
                                         case "21":
                                             System.out.println("Wait");
-                                            PC.low();
-                                            Thread.sleep(400);
                                             PC.high();
+                                            Thread.sleep(400);
+                                            PC.low();
                                             System.out.println("PC On");
                                             break;
                                     }
@@ -144,7 +150,7 @@ public class Server {
 
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
-                                    PC.high();
+                                    PC.low();
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -169,10 +175,6 @@ public class Server {
         public void getStreams() throws IOException {
             output = new ObjectOutputStream(socket.getOutputStream());
             output.flush();
-            //outputB = new ObjectOutputStream(clients.get("Android client"));
-            //outputB.flush();
-            //outputA = new ObjectOutputStream(clients.get("Pc client"));
-            //outputA.flush();
 
 
         }
@@ -188,4 +190,3 @@ public class Server {
         }
     }
 }
-
