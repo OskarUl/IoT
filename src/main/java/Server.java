@@ -12,11 +12,14 @@ import java.util.HashMap;
 
 public class Server {
 
+    private String in;
+    private Socket socket;
     private ServerSocket serverSocket;
     private DataOutputStream os;
     private ObjectInputStream input;
+    private ObjectInputStream inputP;
+    private ObjectInputStream inputA;
     private ObjectOutputStream output;
-    private ObjectOutputStream outputA;
     private HashMap<String, DataOutputStream> clients;
     private int x = 1;
     private GpioPinDigitalOutput led1;
@@ -35,9 +38,7 @@ public class Server {
 
 
     public void runServer() {
-        String in;
-        Socket socket;
-        ServerSocket serverSocket;
+        ;
         try {
             serverSocket = new ServerSocket(12345, 100);
             System.out.println("Server is running");
@@ -47,19 +48,19 @@ public class Server {
                     socket = serverSocket.accept();
                     os = new DataOutputStream(socket.getOutputStream());
                     input = new ObjectInputStream(socket.getInputStream());
-                    in = (String) input.readObject();
-                    System.out.println(in);
-                    switch (in) {
+                    switch (readMessage("")) {
                         case "Pc client":
                             clients.put("Pc client", os);
+                            sendMessage("Hello!", clients.get("Pc client"));
+                            inputP = input;
                             x = 0;
                             System.out.println(clients.get("Pc client"));
-                            //new Controller(socket).start();
                             break;
                         case "Android client":
                             clients.put("Android client", os);
+                            inputA = input;
                             System.out.println(clients.get("Android client"));
-                            new Controller(socket).start();
+                            new Controller().start();
                             break;
                     }
 
@@ -68,9 +69,6 @@ public class Server {
                     System.out.println("hello client " + socket.getRemoteSocketAddress());
                 }catch (IOException e) {
                     System.out.println("I/O error: " + e);
-                }
-                catch (ClassNotFoundException e) {
-                    e.printStackTrace();
                 }
 
             }
@@ -83,51 +81,35 @@ public class Server {
 
     private class Controller extends Thread {
 
-        private Socket socket;
-        private int num;
         private String in;
 
-        public Controller(Socket socket) {
-            this.socket = socket;
-            this.num = num;
-        }
 
         @Override
         public void run() {
 
             try {
-                getStreams();
-                output.writeObject("Hello, Welocme to Raspberry PI");
-                output.flush();
-                while (!(in = (String) input.readObject()).equals("close")) {
+                while (!(in = readMessage("Android client")).equals("close"))  {
                     if (!in.equals("end")) {
                         String PcIn = in;
                         switch (in) {
                             case "10":
                                 System.out.println("Light Off!");
-                                led1.high();
+                                led1.low();
                                 break;
                             case "11":
                                 System.out.println("Light On!");
-                                led1.low();
+                                led1.high();
                                 break;
-
                         }
-
                         new Thread(new Runnable() {
                             public void run() {
                                 try {
-
                                     switch (PcIn) {
                                         case "20":
                                             if (x == 0) {
-                                                outputA = new ObjectOutputStream(clients.get("Pc client"));
-                                                outputA.flush();
-                                                outputA.writeObject("20");
-                                                clients.remove("Pc client");
+                                                sendMessage("20", clients.get("Pc client"));
                                                 System.out.println(clients);
-                                                //outputA.close();
-
+                                                clients.remove("Pc client");
                                                 System.out.println("PC Off");
                                                 x = 1;
                                             } else {
@@ -136,22 +118,17 @@ public class Server {
                                             break;
                                         case "21":
                                             System.out.println("Wait");
-                                            PC.low();
-                                            Thread.sleep(400);
                                             PC.high();
+                                            Thread.sleep(400);
+                                            PC.low();
                                             System.out.println("PC On");
                                             break;
-                                    }
-                                    try {
-                                        output.writeObject("command" + in.toUpperCase());
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
                                     }
 
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
-                                    PC.high();
-                                } catch (IOException e) {
+                                    PC.low();
+                                }catch (IOException e) {
                                     e.printStackTrace();
                                 }
                             }
@@ -164,29 +141,49 @@ public class Server {
             } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println("Error handling client @ " + socket.getRemoteSocketAddress() + ": " + e.getMessage());
-            } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
-            }  finally {
+            }  //catch (ClassNotFoundException ex) {
+            //    ex.printStackTrace();
+            //}
+            finally {
                 closeConnection();
                 System.out.println("Connection with client @ " + socket.getRemoteSocketAddress() + " closed");
             }
         }
 
-        public void getStreams() throws IOException {
-            output = new ObjectOutputStream(socket.getOutputStream());
-            output.flush();
 
+    }
 
-        }
+    public void sendMessage(String message, DataOutputStream a) throws IOException {
+        output = new ObjectOutputStream(a);
+        output.writeObject(message);
+        output.flush();
+    }
+    public String readMessage(String client) throws IOException {
+        try {
+            if (client.equals("Pc client")) {
+                in = (String) inputP.readObject();
 
-        private void closeConnection() {
-            try {
-                output.close();
-                input.close();
-                socket.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            }else if (client.equals("Android client")){
+                in = (String) inputA.readObject();
+
+            }else{
+                in = (String) input.readObject();
+
             }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return in;
+    }
+    private void closeConnection() {
+        try {
+            //output.close();
+            //input.close();
+            inputA.close();
+            //socket.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 }
+
