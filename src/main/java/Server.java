@@ -94,11 +94,11 @@ public class Server {
                         switch (in) {
                             case "10":
                                 System.out.println("Light Off!");
-                                led1.low();
+                                led1.high();
                                 break;
                             case "11":
                                 System.out.println("Light On!");
-                                led1.high();
+                                led1.low();
                                 break;
                         }
                         new Thread(new Runnable() {
@@ -118,16 +118,16 @@ public class Server {
                                             break;
                                         case "21":
                                             System.out.println("Wait");
-                                            PC.high();
-                                            Thread.sleep(400);
                                             PC.low();
+                                            Thread.sleep(400);
+                                            PC.high();
                                             System.out.println("PC On");
                                             break;
                                     }
 
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
-                                    PC.low();
+                                    PC.high();
                                 }catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -145,7 +145,7 @@ public class Server {
             //    ex.printStackTrace();
             //}
             finally {
-                closeConnection();
+                //closeConnection();
                 System.out.println("Connection with client @ " + socket.getRemoteSocketAddress() + " closed");
             }
         }
