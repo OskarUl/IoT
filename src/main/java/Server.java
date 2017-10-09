@@ -1,9 +1,21 @@
 
+/*
+* Fixa updaterings funktionen för Server.
+ */
+
 //import com.pi4j.io.gpio.GpioController;
 //import com.pi4j.io.gpio.GpioFactory;
 //import com.pi4j.io.gpio.GpioPinDigitalOutput;
 //import com.pi4j.io.gpio.PinState;
 //import com.pi4j.io.gpio.RaspiPin;
+import com.dropbox.core.DbxException;
+import com.dropbox.core.DbxRequestConfig;
+import com.dropbox.core.v2.DbxClientV2;
+import com.dropbox.core.v2.files.ListFolderResult;
+import com.dropbox.core.v2.files.Metadata;
+import com.dropbox.core.v2.users.FullAccount;
+
+import javax.swing.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -11,6 +23,11 @@ import java.util.HashMap;
 
 
 public class Server {
+
+    //Test variables
+    private Boolean LED = false;
+    private Boolean PC = false;
+    //--------------
 
     private String in;
     private Socket socket;
@@ -38,7 +55,7 @@ public class Server {
 
 
     public void runServer() {
-;
+
         try {
             serverSocket = new ServerSocket(12345, 100);
             System.out.println("Server is running");
@@ -61,6 +78,8 @@ public class Server {
                             inputA = input;
                             System.out.println(clients.get("Android client"));
                             new Controller().start();
+                            sendMessage("PC " + String.valueOf(PC), clients.get("Android client"));
+                            sendMessage("LED " + String.valueOf(LED), clients.get("Android client"));
                             break;
                     }
 
@@ -95,10 +114,18 @@ public class Server {
                                 case "10":
                                     System.out.println("Light Off!");
                                     //led1.low();
+                                    LED = false;
                                     break;
                                 case "11":
                                     System.out.println("Light On!");
                                     //led1.high();
+                                    LED = true;
+                                    break;
+                                case "30":
+                                    System.out.println("Updating");
+                                    break;
+                                case "Test":
+
                                     break;
                             }
                            new Thread(new Runnable() {
@@ -107,13 +134,20 @@ public class Server {
                                         switch (PcIn) {
                                             case "20":
                                                 if (x == 0) {
+                                                    Boolean y = true;
                                                     sendMessage("20", clients.get("Pc client"));
-                                                    System.out.println(clients);
+                                                    while (y == true){
+                                                        if(readMessage("Pc client").equals("Off")){
+                                                        sendMessage("Off", clients.get("Android client"));
+                                                            y = false;
+                                                        }
+                                                    }
                                                     clients.remove("Pc client");
                                                     System.out.println("PC Off");
                                                     x = 1;
                                                 } else {
                                                     System.out.println("Pc not conected");
+                                                    PC = false;
                                                 }
                                                 break;
                                             case "21":
@@ -122,6 +156,7 @@ public class Server {
                                                 Thread.sleep(400);
                                                 //PC.low();
                                                 System.out.println("PC On");
+                                                PC = true;
                                                 break;
                                         }
 
@@ -145,8 +180,8 @@ public class Server {
             //    ex.printStackTrace();
             //}
             finally {
-                closeConnection();
-                System.out.println("Connection with client @ " + socket.getRemoteSocketAddress() + " closed");
+                //closeConnection();
+                //System.out.println("Connection with client @ " + socket.getRemoteSocketAddress() + " closed");
             }
         }
 
@@ -178,11 +213,63 @@ public class Server {
     private void closeConnection() {
         try {
             //output.close();
-            //input.close();
-            inputA.close();
+            input.close();
+            //inputA.close();
             //socket.close();
         } catch (IOException ex) {
             ex.printStackTrace();
+        }
+    }
+}
+class updater{
+    private static final String ACCESS_TOKEN = "gJKkMgm0o8AAAAAAAAAAYSuQZFy2plTSmSAt02gsXVAxn2gTn-qVBaqIMvdZwy8q";
+    private static String name = null;
+
+    public static void main(String [] args) throws DbxException {
+        byte[] b = {65,66,67,68,69};;
+
+        DbxRequestConfig config = new DbxRequestConfig("dropbox", "en_US");
+        DbxClientV2 client = new DbxClientV2(config, ACCESS_TOKEN);
+
+        FullAccount account = client.users().getCurrentAccount();
+        System.out.println(account.getName().getDisplayName());
+
+        ListFolderResult result = client.files().listFolder("");
+        while (true) {
+            for (Metadata metadata : result.getEntries()) {
+                name = metadata.getPathLower();
+                if (metadata.getPathLower().equals("/raspberry.jar")) {
+                    client.files().delete("/raspberry.jar");
+                }
+                try {
+                    InputStream in = new FileInputStream("C:\\Users\\Oskar\\IdeaProjects\\raspberryIoT\\out\\artifacts\\raspberryIoT_jar\\raspberryIoT.jar");
+                    client.files().uploadBuilder("/raspberry.jar").uploadAndFinish(in);
+                    System.out.println("raspberry.jar has been uploaded to dropbox");
+                    //OutputStream downloadFile = new FileOutputStream("C:\\Users\\Hule-Elev\\IdeaProjects\\text.jar");
+                    /*try {
+                        if (metadata.getPathLower().equals("/text.jar")) {
+                            client.files().downloadBuilder("/text.jar").download(downloadFile);
+                            System.out.println("text.txt has been downloaded!");
+                        }
+                    }  finally {
+                        downloadFile.close();
+                    }*/
+                }
+                catch (DbxException e)
+                {
+                    JOptionPane.showMessageDialog(null, "Unable to download file to local system\n Error: " + e);
+                }
+                catch (IOException e)
+                {
+                    JOptionPane.showMessageDialog(null, "Unable to download file to local system\n Error: " + e);
+                }
+            }
+
+            if (!result.getHasMore()) {
+                break;
+            }
+
+            result = client.files().listFolderContinue(result.getCursor());
         }
     }
 }
