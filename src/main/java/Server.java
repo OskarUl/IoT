@@ -260,7 +260,7 @@ class updater{
                     OutputStream downloadFile = new FileOutputStream("/home/pi/testing/IoT/target/IOT.jar");
                     try {
                         System.out.println("2");
-                        if (metadata.getPathLower().equals("/IOT_RaspberryPI-1.0-SNAPSHOT.jar")) {
+                        if (metadata.getPathLower().equals("/iot_raspberrypi-1.0-snapshot.jar")) {
                             client.files().downloadBuilder("/IOT_RaspberryPI-1.0-SNAPSHOT.jar").download(downloadFile);
                             System.out.println("IOT_RaspberryPI-1.0-SNAPSHOT.jar has been downloaded!");
                         } else {
