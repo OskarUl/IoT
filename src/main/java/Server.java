@@ -249,18 +249,22 @@ class updater{
         while (true) {
             for (Metadata metadata : result.getEntries()) {
                 name = metadata.getPathLower();
-                if (metadata.getPathLower().equals("/IOT_RaspberryPI-1.0-SNAPSHOT.jar")) {
-                    client.files().delete("/IOT_RaspberryPI-1.0-SNAPSHOT.jar");
-                }
+                //if (metadata.getPathLower().equals("/IOT_RaspberryPI-1.0-SNAPSHOT.jar")) {
+                //    client.files().delete("/IOT_RaspberryPI-1.0-SNAPSHOT.jar");
+                //}
                 try {
+                    System.out.println("1" + name);
                     //InputStream in = new FileInputStream("C:\\Users\\Oskar\\IdeaProjects\\raspberryIoT\\out\\artifacts\\raspberryIoT_jar\\raspberryIoT.jar");
                     //client.files().uploadBuilder("/IOT_RaspberryPI-1.0-SNAPSHOT.jar").uploadAndFinish(in);
                     //System.out.println("IOT_RaspberryPI-1.0-SNAPSHOT.jar has been uploaded to dropbox");
                     OutputStream downloadFile = new FileOutputStream("/home/pi/testing/IoT/target/IOT.jar");
                     try {
+                        System.out.println("2");
                         if (metadata.getPathLower().equals("/IOT_RaspberryPI-1.0-SNAPSHOT.jar")) {
                             client.files().downloadBuilder("/IOT_RaspberryPI-1.0-SNAPSHOT.jar").download(downloadFile);
                             System.out.println("IOT_RaspberryPI-1.0-SNAPSHOT.jar has been downloaded!");
+                        } else {
+                            System.out.println("3" + name);
                         }
                     }  finally {
                         downloadFile.close();
