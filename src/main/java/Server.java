@@ -13,6 +13,7 @@ import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.ListFolderResult;
 import com.dropbox.core.v2.files.Metadata;
+import com.dropbox.core.v2.files.UpdatePropertiesError;
 import com.dropbox.core.v2.users.FullAccount;
 
 import javax.swing.*;
@@ -121,8 +122,9 @@ public class Server {
                                     //led1.high();
                                     LED = true;
                                     break;
-                                case "30":
+                                case "update":
                                     System.out.println("Updating");
+                                    updateServer();
                                     break;
                                 case "Test":
 
@@ -153,7 +155,7 @@ public class Server {
                                             case "21":
                                                 System.out.println("Wait");
                                                 //PC.high();
-                                                Thread.sleep(400);
+                                                Thread.sleep(300);
                                                 //PC.low();
                                                 System.out.println("PC On");
                                                 PC = true;
@@ -198,6 +200,7 @@ public class Server {
             if (client.equals("Pc client")) {
                 in = (String) inputP.readObject();
 
+
             }else if (client.equals("Android client")){
                 in = (String) inputA.readObject();
 
@@ -220,12 +223,20 @@ public class Server {
             ex.printStackTrace();
         }
     }
+    private void updateServer() {
+        updater Update = new updater();
+        try {
+            Update.main();
+        } catch (DbxException e) {
+            e.printStackTrace();
+        }
+    }
 }
 class updater{
     private static final String ACCESS_TOKEN = "gJKkMgm0o8AAAAAAAAAAYSuQZFy2plTSmSAt02gsXVAxn2gTn-qVBaqIMvdZwy8q";
     private static String name = null;
 
-    public static void main(String [] args) throws DbxException {
+    public static void main() throws DbxException {
         byte[] b = {65,66,67,68,69};;
 
         DbxRequestConfig config = new DbxRequestConfig("dropbox", "en_US");
@@ -238,22 +249,22 @@ class updater{
         while (true) {
             for (Metadata metadata : result.getEntries()) {
                 name = metadata.getPathLower();
-                if (metadata.getPathLower().equals("/raspberry.jar")) {
-                    client.files().delete("/raspberry.jar");
+                if (metadata.getPathLower().equals("/IOT_RaspberryPI-1.0-SNAPSHOT.jar")) {
+                    client.files().delete("/IOT_RaspberryPI-1.0-SNAPSHOT.jar");
                 }
                 try {
-                    InputStream in = new FileInputStream("C:\\Users\\Oskar\\IdeaProjects\\raspberryIoT\\out\\artifacts\\raspberryIoT_jar\\raspberryIoT.jar");
-                    client.files().uploadBuilder("/raspberry.jar").uploadAndFinish(in);
-                    System.out.println("raspberry.jar has been uploaded to dropbox");
-                    //OutputStream downloadFile = new FileOutputStream("C:\\Users\\Hule-Elev\\IdeaProjects\\text.jar");
-                    /*try {
-                        if (metadata.getPathLower().equals("/text.jar")) {
-                            client.files().downloadBuilder("/text.jar").download(downloadFile);
-                            System.out.println("text.txt has been downloaded!");
+                    //InputStream in = new FileInputStream("C:\\Users\\Oskar\\IdeaProjects\\raspberryIoT\\out\\artifacts\\raspberryIoT_jar\\raspberryIoT.jar");
+                    //client.files().uploadBuilder("/IOT_RaspberryPI-1.0-SNAPSHOT.jar").uploadAndFinish(in);
+                    //System.out.println("IOT_RaspberryPI-1.0-SNAPSHOT.jar has been uploaded to dropbox");
+                    OutputStream downloadFile = new FileOutputStream("/home/pi/testing/IoT/target/IOT.jar");
+                    try {
+                        if (metadata.getPathLower().equals("/IOT_RaspberryPI-1.0-SNAPSHOT.jar")) {
+                            client.files().downloadBuilder("/IOT_RaspberryPI-1.0-SNAPSHOT.jar").download(downloadFile);
+                            System.out.println("IOT_RaspberryPI-1.0-SNAPSHOT.jar has been downloaded!");
                         }
                     }  finally {
                         downloadFile.close();
-                    }*/
+                    }
                 }
                 catch (DbxException e)
                 {
