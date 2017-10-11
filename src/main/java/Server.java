@@ -268,11 +268,11 @@ class updater{
                 }
                 catch (DbxException e)
                 {
-                    JOptionPane.showMessageDialog(null, "Unable to download file to local system\n Error: " + e);
+                    System.out.println( "Unable to download file to local system\n Error: " + e);
                 }
                 catch (IOException e)
                 {
-                    JOptionPane.showMessageDialog(null, "Unable to download file to local system\n Error: " + e);
+                    System.out.println( "Unable to download file to local system\n Error: " + e);
                 }
             }
 
